@@ -15,6 +15,7 @@ import axios from 'axios'
 
 function App() {
     const[loading, setLoading] = useState(false)
+    const[saldo, setSaldo] = useState(0)
     // const[menu, setMenu] = useState('menu')
 
     const {
@@ -29,6 +30,13 @@ function App() {
         handleSubmit: handleSubmit2,
         formState: { errors:error2 },
         reset:reset2,
+    } = useForm()
+
+    const {
+        register: register3,
+        handleSubmit: handleSubmit3,
+        formState: { errors:error3 },
+        reset:reset3,
     } = useForm()
 
     const onChange = (event) => {
@@ -71,10 +79,30 @@ function App() {
                 type: tipo,
             })
         }
-    } 
+    }
+
+    const onConsultarSaldo = async(data)=>{
+
+        let tipo = 'success';
+        let mensaje = "Consulta Existosa";
+        try {
+            const res_saldo = await axios.get(`http://localhost:3001/api/saldos/${data.documento}/`);
+            console.log(res_saldo);
+            setSaldo(res_saldo.data.data.saldo)
+        } catch (error) {
+                tipo = 'error'
+                mensaje = error.response.data.message
+        } finally {
+            toaster.create({
+                description: mensaje,
+                type: tipo,
+            })
+        }
+    }
 
     const onSubmit = handleSubmit(onRegistrarUsuario)
     const onSubmit2 = handleSubmit2(onRecargarUsuario)
+    const onSubmit3 = handleSubmit3(onConsultarSaldo)
 
     return (
         <HStack>
@@ -193,6 +221,37 @@ function App() {
                                     </Field>
                                     
                                     <Button type="submit">Recargar</Button>
+                                </Stack>
+                            </form>
+                        </Card.Body>
+                    </Card.Root>
+
+                    <Card.Root width="28%">
+                        <Card.Body gap="2">
+                            <Card.Title mt="2">Consultar Saldo</Card.Title>
+                            <Card.Description>
+                                Curabitur nec odio vel dui euismod fermentum.
+                            </Card.Description>
+                            <form onSubmit={onSubmit3}>
+                                <Stack gap="4" align="flex-start" maxW="sm">
+                                    <Field
+                                    label="DOCUMENTO"
+                                    invalid={!!error3.documento}
+                                    errorText={error3.documento?.message}
+                                    >
+                                        <Input
+                                            {...register3("documento", {
+                                                required: "Documento es obligatorio",
+                                                maxLength:30,
+                                            })}
+                                        />
+                                    </Field>
+
+                                    <Field>
+                                        <h1>{saldo} $</h1>
+                                    </Field>
+                                    
+                                    <Button type="submit">Consultar</Button>
                                 </Stack>
                             </form>
                         </Card.Body>
