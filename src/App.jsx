@@ -1,6 +1,6 @@
 import './App.css'
 import { useState } from 'react'
-import { HStack, Text, Card, Flex, Input, Grid, GridItem, createIcon, Stack, Button } from "@chakra-ui/react"
+import { HStack, Text, Card, Flex, Input, Grid, GridItem, createIcon, Stack, Button, Separator, Textarea } from "@chakra-ui/react"
 import { Field } from "./components/ui/field"
 import { Toaster, toaster } from "./components/ui/toaster"
 import { Avatar } from "./components/ui/avatar"
@@ -44,6 +44,13 @@ function App() {
         handleSubmit: handleSubmit4,
         formState: { errors:error4 },
         reset:reset4,
+    } = useForm()
+
+    const {
+        register: register5,
+        handleSubmit: handleSubmit5,
+        formState: { errors:error5 },
+        reset:reset5,
     } = useForm()
 
     const onChange = (event) => {
@@ -127,10 +134,32 @@ function App() {
         }
     }
 
+    const onConfirmarPago = async(data)=>{
+        let tipo = 'success';
+        let mensaje = "Pago Confirmado";
+        try {
+            const config = {
+                headers: {
+                  Authorization: `Bearer ${data.sesion}`
+                }
+            };
+            await axios.post('http://localhost:3001/api/confirmar/', {llave: data.llave}, config);
+        } catch (error) {
+                tipo = 'error'
+                mensaje = error.response.data.message
+        } finally {
+            toaster.create({
+                description: mensaje,
+                type: tipo,
+            })
+        }
+    }
+
     const onSubmit = handleSubmit(onRegistrarUsuario)
     const onSubmit2 = handleSubmit2(onRecargarUsuario)
     const onSubmit3 = handleSubmit3(onConsultarSaldo)
     const onSubmit4 = handleSubmit4(onPagarUsuario)
+    const onSubmit5 = handleSubmit5(onConfirmarPago)
 
     return (
         <HStack>
@@ -245,12 +274,13 @@ function App() {
                                     <Button type="submit">Recargar</Button>
                                 </Stack>
                             </form>
+                            
                         </Card.Body>
                     </Card.Root>
 
                     <Card.Root width="28%">
                         <Card.Body gap="2">
-                            <Card.Title mt="2">2. Pagar Usuario</Card.Title>
+                            <Card.Title mt="2">3.1 Pagar Usuario</Card.Title>
                             <Card.Description>
                                 Curabitur nec odio vel dui euismod fermentum.
                             </Card.Description>
@@ -286,6 +316,44 @@ function App() {
                                     </Field>
                                     
                                     <Button type="submit">Pagar</Button>
+                                </Stack>
+                            </form>
+                        </Card.Body>
+
+                        <Separator />
+
+                        <Card.Body gap="2">
+                            <Card.Title mt="2">3.2 Confirmar Pago</Card.Title>
+                            <Card.Description>
+                                Curabitur nec odio vel dui euismod fermentum.
+                            </Card.Description>
+                            <form onSubmit={onSubmit5}>
+                                <Stack gap="4" align="flex-start" maxW="sm">
+                                    <Field
+                                    label="LLAVE"
+                                    invalid={!!error5.llave}
+                                    errorText={error5.llave?.message}
+                                    >
+                                        <Input
+                                            {...register5("llave", {
+                                                required: "Llave es obligatorio",
+                                                maxLength:30,
+                                            })}
+                                        />
+                                    </Field>
+                                    <Field
+                                    label="ID SESSION"
+                                    invalid={!!error5.sesion}
+                                    errorText={error5.sesion?.message}
+                                    >
+                                        <Textarea rows={5}
+                                            {...register5("sesion", { 
+                                                required: "El id de sesion es obligatorio",
+                                            })}
+                                        />
+                                    </Field>
+                                    
+                                    <Button type="submit">Confirmar</Button>
                                 </Stack>
                             </form>
                         </Card.Body>
