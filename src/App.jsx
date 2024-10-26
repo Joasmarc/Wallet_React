@@ -1,35 +1,139 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import { useState } from 'react'
+import { HStack, Text, Card, Flex, Input, Grid, GridItem, createIcon, Stack, Button } from "@chakra-ui/react"
+import { Field } from "./components/ui/field"
+import { Toaster, toaster } from "./components/ui/toaster"
+import { Avatar } from "./components/ui/avatar"
+import { LuUser } from 'react-icons/lu'
+import { InputGroup } from "./components/ui/input-group"
+import { FaRegIdCard } from "react-icons/fa";
+import { IoMdMail } from "react-icons/io";
+import { IoPhonePortraitSharp } from "react-icons/io5";
+import { useForm } from "react-hook-form"
+import { CardBasic } from './components/ui/cardbasic'
+import axios from 'axios'
 
 function App() {
-  const [count, setCount] = useState(0)
+    const[loading, setLoading] = useState(false)
+    // const[menu, setMenu] = useState('menu')
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        reset,
+    } = useForm()
+
+    const onChange = (event) => {
+        event.target.value = event.target.value.toUpperCase();
+    };
+
+    // Peticiones
+    const onRegistrarUsuario = async(data)=>{
+        let tipo = 'success';
+        let mensaje = "Usuario Registrado Exitosamente";
+
+        const resultado = await axios.post('http://localhost:3001/api/usuarios/', data);
+        if (resultado.data.statusCode !== 200){
+            tipo = 'error'
+            mensaje = resultado.data.message.join(' - ')
+        }
+
+        reset()
+        toaster.create({
+            description: mensaje,
+            type: tipo,
+        })
+    } 
+
+    const onSubmit = handleSubmit(onRegistrarUsuario)
+
+    return (
+        <HStack>
+            <Toaster />
+
+            <Flex gap="4" direction="column">
+                <Flex gap="4" justify="center">
+                    <Text textStyle="4xl">ePayco</Text>
+                </Flex>
+                <Flex gap="4" justify="center">
+                    <CardBasic />
+                    <CardBasic />
+                    <CardBasic />
+                    <CardBasic />
+                </Flex>
+                <Flex gap="4" justify="center">
+
+                    <Card.Root width="28%">
+                        <Card.Body gap="2">
+                            <Card.Title mt="2">Registrar Usuario</Card.Title>
+                            <Card.Description>
+                                Curabitur nec odio vel dui euismod fermentum.
+                            </Card.Description>
+                            <form onSubmit={onSubmit}>
+                                <Stack gap="4" align="flex-start" maxW="sm">
+                                    <Field
+                                    label="DOCUMENTO"
+                                    invalid={!!errors.documento}
+                                    errorText={errors.documento?.message}
+                                    >
+                                        <Input
+                                            {...register("documento", {
+                                                required: "Documento es obligatorio",
+                                                maxLength:30,
+                                            })}
+                                        />
+                                    </Field>
+                                    <Field
+                                    label="NOMBRES"
+                                    invalid={!!errors.nombres}
+                                    errorText={errors.nombres?.message}
+                                    >
+                                        <Input
+                                            {...register("nombre", { 
+                                                required: "Nombres es obligatorio",
+                                                maxLength: 30
+                                            })}
+                                            onChange={onChange}
+                                        />
+                                    </Field>
+                                    <Field
+                                    label="EMAIL"
+                                    invalid={!!errors.email}
+                                    errorText={errors.email?.message}
+                                    >
+                                        <Input
+                                            {...register("email", { 
+                                                required: "Email es obligatorio",
+                                                pattern: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                            })}
+                                        />
+                                    </Field>
+                                    <Field
+                                    label="CELULAR"
+                                    invalid={!!errors.celular}
+                                    errorText={errors.celular?.message}
+                                    >
+                                        <Input
+                                            {...register("celular", {
+                                                required: "Celular es obligatorio",
+                                                minLength: 7,
+                                            })}
+                                        />
+                                    </Field>
+                                    <Button type="submit">Registrar</Button>
+                                </Stack>
+                            </form>
+                        </Card.Body>
+                    </Card.Root>
+
+                </Flex>
+            </Flex>
+
+            
+
+        </HStack>
+    )
 }
 
 export default App
