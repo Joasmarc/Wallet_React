@@ -39,6 +39,13 @@ function App() {
         reset:reset3,
     } = useForm()
 
+    const {
+        register: register4,
+        handleSubmit: handleSubmit4,
+        formState: { errors:error4 },
+        reset:reset4,
+    } = useForm()
+
     const onChange = (event) => {
         event.target.value = event.target.value.toUpperCase();
     };
@@ -100,9 +107,30 @@ function App() {
         }
     }
 
+    const onPagarUsuario = async(data)=>{
+        let tipo = 'success';
+        let mensaje = "Pago Cargado Exitosamente";
+        try {
+            await axios.post('http://localhost:3001/api/pagar/', {
+                ...data,
+                monto: parseFloat(data.monto),
+                descripcion: 'pagar',
+            });
+        } catch (error) {
+                tipo = 'error'
+                mensaje = error.response.data.message
+        } finally {
+            toaster.create({
+                description: mensaje,
+                type: tipo,
+            })
+        }
+    }
+
     const onSubmit = handleSubmit(onRegistrarUsuario)
     const onSubmit2 = handleSubmit2(onRecargarUsuario)
     const onSubmit3 = handleSubmit3(onConsultarSaldo)
+    const onSubmit4 = handleSubmit4(onPagarUsuario)
 
     return (
         <HStack>
@@ -110,19 +138,13 @@ function App() {
 
             <Flex gap="4" direction="column">
                 <Flex gap="4" justify="center">
-                    <Text textStyle="4xl">ePayco</Text>
-                </Flex>
-                <Flex gap="4" justify="center">
-                    <CardBasic />
-                    <CardBasic />
-                    <CardBasic />
-                    <CardBasic />
+                    <Text textStyle="4xl">Prueba Tecnica ePayco</Text>
                 </Flex>
                 <Flex gap="4" justify="center">
 
                     <Card.Root width="28%">
                         <Card.Body gap="2">
-                            <Card.Title mt="2">Registrar Usuario</Card.Title>
+                            <Card.Title mt="2">1. Registrar Usuario</Card.Title>
                             <Card.Description>
                                 Curabitur nec odio vel dui euismod fermentum.
                             </Card.Description>
@@ -185,7 +207,7 @@ function App() {
 
                     <Card.Root width="28%">
                         <Card.Body gap="2">
-                            <Card.Title mt="2">Recargar Usuario</Card.Title>
+                            <Card.Title mt="2">2. Recargar Usuario</Card.Title>
                             <Card.Description>
                                 Curabitur nec odio vel dui euismod fermentum.
                             </Card.Description>
@@ -228,7 +250,50 @@ function App() {
 
                     <Card.Root width="28%">
                         <Card.Body gap="2">
-                            <Card.Title mt="2">Consultar Saldo</Card.Title>
+                            <Card.Title mt="2">2. Pagar Usuario</Card.Title>
+                            <Card.Description>
+                                Curabitur nec odio vel dui euismod fermentum.
+                            </Card.Description>
+                            <form onSubmit={onSubmit4}>
+                                <Stack gap="4" align="flex-start" maxW="sm">
+                                    <Field
+                                    label="DOCUMENTO"
+                                    invalid={!!error4.documento}
+                                    errorText={error4.documento?.message}
+                                    >
+                                        <Input
+                                            {...register4("documento", {
+                                                required: "Documento es obligatorio",
+                                                maxLength:30,
+                                            })}
+                                        />
+                                    </Field>
+                                    <Field
+                                    label="MONTO"
+                                    invalid={!!error4.monto}
+                                    errorText={error4.monto?.message}
+                                    >
+                                        <Input
+                                            {...register4("monto", { 
+                                                required: "El monto es obligatorio",
+                                                maxLength: 10,
+                                                pattern: {
+                                                    value: /^\d+(\.\d{1,2})?$/,
+                                                    message: 'Ingrese un número decimal con hasta 2 decimales'
+                                                }                                 
+                                            })}
+                                        />
+                                    </Field>
+                                    
+                                    <Button type="submit">Pagar</Button>
+                                </Stack>
+                            </form>
+                        </Card.Body>
+                    </Card.Root>
+
+                    <Card.Root width="28%">
+                        <Card.Body gap="2">
+                            <Card.Title mt="2">4. Consultar Saldo</Card.Title>
                             <Card.Description>
                                 Curabitur nec odio vel dui euismod fermentum.
                             </Card.Description>
